@@ -40,6 +40,10 @@ export class ClientsService {
       },
     });
 
+    if (!user.client) {
+      throw new ConflictException('Erro ao criar cliente');
+    }
+
     return this.findOne(user.client.id);
   }
 
@@ -90,6 +94,10 @@ export class ClientsService {
       where: { id },
     });
 
+    if (!client) {
+      throw new NotFoundException('Cliente não encontrado');
+    }
+
     // Atualizar nome do usuário se fornecido
     if (updateClientDto.name) {
       await this.prisma.user.update({
@@ -115,6 +123,10 @@ export class ClientsService {
     const client = await this.prisma.client.findUnique({
       where: { id },
     });
+
+    if (!client) {
+      throw new NotFoundException('Cliente não encontrado');
+    }
 
     // Deletar o usuário (cascade vai deletar o cliente)
     await this.prisma.user.delete({

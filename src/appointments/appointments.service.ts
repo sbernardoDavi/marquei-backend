@@ -157,7 +157,7 @@ export class AppointmentsService {
     }
 
     const targetDate = new Date(date);
-    const dayOfWeek = this.getDayOfWeek(targetDate);
+    const dayOfWeek = this.getDayOfWeek(targetDate) as any;
 
     // Buscar jornada de trabalho do profissional para o dia
     const workSchedule = await this.prisma.workSchedule.findFirst({
@@ -471,7 +471,7 @@ export class AppointmentsService {
     start: Date,
     end: Date,
   ) {
-    const dayOfWeek = this.getDayOfWeek(start);
+    const dayOfWeek = this.getDayOfWeek(start) as any;
 
     const workSchedule = await this.prisma.workSchedule.findFirst({
       where: {

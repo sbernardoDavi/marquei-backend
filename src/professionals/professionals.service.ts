@@ -42,6 +42,10 @@ export class ProfessionalsService {
       },
     });
 
+    if (!user.professional) {
+      throw new ConflictException('Erro ao criar profissional');
+    }
+
     // Associar serviços se fornecidos
     if (
       createProfessionalDto.serviceIds &&
@@ -119,6 +123,10 @@ export class ProfessionalsService {
       where: { id },
     });
 
+    if (!professional) {
+      throw new NotFoundException('Profissional não encontrado');
+    }
+
     // Atualizar nome do usuário se fornecido
     if (updateProfessionalDto.name) {
       await this.prisma.user.update({
@@ -149,6 +157,10 @@ export class ProfessionalsService {
     const professional = await this.prisma.professional.findUnique({
       where: { id },
     });
+
+    if (!professional) {
+      throw new NotFoundException('Profissional não encontrado');
+    }
 
     // Deletar o usuário (cascade vai deletar o profissional)
     await this.prisma.user.delete({
