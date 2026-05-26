@@ -1,0 +1,192 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  GESTOR
+  PROFISSIONAL
+  CLIENTE
+}
+
+enum AppointmentStatus {
+  AGENDADO
+  REALIZADO
+  NO_SHOW
+  CANCELADO
+}
+
+enum ImportStatus {
+  NA_FILA
+  PROCESSANDO
+  CONCLUIDO
+  CONCLUIDO_COM_FALHAS
+  FALHOU
+}
+
+enum DayOfWeek {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
+  DOMINGO
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  professional      Professional?
+  client            Client?
+  appointments      Appointment[]
+  notifications     Notification[]
+  importJobs        ImportJob[]
+
+  @@map("users")
+}
+
+model Professional {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  workSchedules WorkSchedule[]
+  services      ProfessionalService[]
+  appointments  Appointment[]
+
+  @@map("professionals")
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  appointments Appointment[]
+
+  @@map("clients")
+}
+
+model Service {
+  id               String   @id @default(uuid())
+  name             String
+  durationMinutes  Int
+  price            Decimal  @db.Decimal(10, 2)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relacionamentos
+  professionals ProfessionalService[]
+  appointments  Appointment[]
+
+  @@map("services")
+}
+
+model ProfessionalService {
+  id             String   @id @default(uuid())
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  serviceId      String
+  service        Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+
+  @@unique([professionalId, serviceId])
+  @@map("professional_services")
+}
+
+model WorkSchedule {
+  id             String    @id @default(uuid())
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  dayOfWeek      DayOfWeek
+  startTime      String    // Formato HH:mm
+  endTime        String    // Formato HH:mm
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("work_schedules")
+}
+
+model Appointment {
+  id             String            @id @default(uuid())
+  clientId       String
+  client         Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   Professional      @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  serviceId      String
+  service        Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?             @relation(fields: [userId], references: [id])
+  startTime      DateTime
+  endTime        DateTime
+  status         AppointmentStatus @default(AGENDADO)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  // Relacionamentos
+  notifications Notification[]
+
+  @@index([professionalId, startTime])
+  @@index([clientId])
+  @@index([startTime])
+  @@map("appointments")
+}
+
+model Notification {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  type          String   // CONFIRMACAO, LEMBRETE, CANCELAMENTO, REMARCACAO
+  message       String
+  sent          Boolean  @default(false)
+  sentAt        DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([userId, sent])
+  @@index([appointmentId])
+  @@map("notifications")
+}
+
+model ImportJob {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String       // CLIENTES, AGENDAMENTOS
+  fileName    String
+  status      ImportStatus @default(NA_FILA)
+  totalRows   Int          @default(0)
+  processedRows Int        @default(0)
+  successRows Int          @default(0)
+  failedRows  Int          @default(0)
+  errors      Json?        // Array de erros por linha
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  completedAt DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@map("import_jobs")
+}
