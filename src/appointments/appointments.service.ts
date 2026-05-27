@@ -19,8 +19,27 @@ export class AppointmentsService {
   ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto, userId?: string) {
-    const { clientId, professionalId, serviceId, startTime } =
+    let { clientId, professionalId, serviceId, startTime } =
       createAppointmentDto;
+
+    // Se clientId não foi fornecido, buscar do usuário logado
+    if (!clientId && userId) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        include: { client: true },
+      });
+
+      if (user?.role === 'CLIENTE' && user.client) {
+        clientId = user.client.id;
+      }
+    }
+
+    // Validar que temos um clientId
+    if (!clientId) {
+      throw new BadRequestException(
+        'clientId é obrigatório ou usuário deve ser um CLIENTE',
+      );
+    }
 
     // Validar que o serviço existe
     const service = await this.prisma.service.findUnique({
@@ -71,10 +90,10 @@ export class AppointmentsService {
         // Lock pessimista: buscar agendamentos conflitantes com FOR UPDATE
         const conflictingAppointments = await tx.$queryRaw<any[]>`
           SELECT id FROM appointments
-          WHERE professional_id = ${professionalId}
+          WHERE "professionalId" = ${professionalId}
           AND status = 'AGENDADO'
           AND (
-            (start_time < ${end} AND end_time > ${start})
+            ("startTime" < ${end} AND "endTime" > ${start})
           )
           FOR UPDATE
         `;

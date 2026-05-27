@@ -1,9 +1,14 @@
-import { IsNotEmpty, IsString, IsDateString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsDateString,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateAppointmentDto {
   @IsString()
-  @IsNotEmpty()
-  clientId: string;
+  @IsOptional()
+  clientId?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -15,5 +20,5 @@ export class CreateAppointmentDto {
 
   @IsDateString()
   @IsNotEmpty()
-  startTime: string; // ISO 8601 format
+  startTime: string;
 }
