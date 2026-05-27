@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
 import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
@@ -12,7 +13,10 @@ import { AvailableSlotsDto } from './dto/available-slots.dto';
 
 @Injectable()
 export class AppointmentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto, userId?: string) {
     const { clientId, professionalId, serviceId, startTime } =
@@ -118,8 +122,8 @@ export class AppointmentsService {
         });
       });
 
-      // TODO: Disparar notificações de forma assíncrona
-      // await this.notificationsService.sendAppointmentConfirmation(appointment);
+      // Disparar notificações de forma assíncrona
+      await this.notificationsService.sendAppointmentConfirmation(appointment);
 
       return appointment;
     } catch (error) {
@@ -335,6 +339,7 @@ export class AppointmentsService {
       );
     }
 
+    const oldTime = appointment.startTime;
     const newStart = new Date(rescheduleDto.newStartTime);
     const service = appointment.service;
     const newEnd = new Date(
@@ -378,7 +383,7 @@ export class AppointmentsService {
       throw new ConflictException('Novo horário não disponível');
     }
 
-    return this.prisma.appointment.update({
+    const updatedAppointment = await this.prisma.appointment.update({
       where: { id },
       data: {
         startTime: newStart,
@@ -410,6 +415,14 @@ export class AppointmentsService {
         service: true,
       },
     });
+
+    // Enviar notificações de remarcação
+    await this.notificationsService.sendRescheduleNotification(
+      updatedAppointment,
+      oldTime,
+    );
+
+    return updatedAppointment;
   }
 
   async cancel(id: string) {
@@ -433,7 +446,7 @@ export class AppointmentsService {
       );
     }
 
-    return this.prisma.appointment.update({
+    const updatedAppointment = await this.prisma.appointment.update({
       where: { id },
       data: { status: 'CANCELADO' },
       include: {
@@ -462,6 +475,13 @@ export class AppointmentsService {
         service: true,
       },
     });
+
+    // Enviar notificações de cancelamento
+    await this.notificationsService.sendCancellationNotification(
+      updatedAppointment,
+    );
+
+    return updatedAppointment;
   }
 
   // Métodos auxiliares privados
