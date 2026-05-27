@@ -9,6 +9,7 @@ import { ProfessionalsModule } from './professionals/professionals.module';
 import { ClientsModule } from './clients/clients.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     ClientsModule,
     AppointmentsModule,
     NotificationsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
