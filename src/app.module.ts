@@ -10,6 +10,7 @@ import { ClientsModule } from './clients/clients.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ImportsModule } from './imports/imports.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     AppointmentsModule,
     NotificationsModule,
     DashboardModule,
+    ImportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

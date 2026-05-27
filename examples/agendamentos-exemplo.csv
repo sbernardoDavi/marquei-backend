@@ -1,0 +1,4 @@
+clientEmail,professionalEmail,serviceName,startTime,status
+maria@cliente.com,carlos@marquei.com,Corte de Cabelo,2026-06-01T10:00:00.000Z,AGENDADO
+pedro@cliente.com,carlos@marquei.com,Barba,2026-06-01T11:00:00.000Z,AGENDADO
+maria@cliente.com,carlos@marquei.com,Corte + Barba,2026-06-02T14:00:00.000Z,AGENDADO
