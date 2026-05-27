@@ -232,6 +232,10 @@ export class AppointmentsService {
     status?: string;
     startDate?: string;
     endDate?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
   }) {
     const where: any = {};
 
@@ -245,7 +249,20 @@ export class AppointmentsService {
       if (filters.endDate) where.startTime.lte = new Date(filters.endDate);
     }
 
-    return this.prisma.appointment.findMany({
+    // Paginação
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 10;
+    const skip = (page - 1) * limit;
+
+    // Ordenação
+    const sortBy = filters?.sortBy || 'startTime';
+    const sortOrder = filters?.sortOrder || 'desc';
+
+    // Buscar total de registros
+    const total = await this.prisma.appointment.count({ where });
+
+    // Buscar registros paginados
+    const data = await this.prisma.appointment.findMany({
       where,
       include: {
         client: {
@@ -273,9 +290,24 @@ export class AppointmentsService {
         service: true,
       },
       orderBy: {
-        startTime: 'desc',
+        [sortBy]: sortOrder,
       },
+      skip,
+      take: limit,
     });
+
+    // Retornar com metadados de paginação
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page < Math.ceil(total / limit),
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 
   async findOne(id: string) {
