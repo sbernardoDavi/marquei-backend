@@ -338,31 +338,6 @@ npx prisma studio
 
 Acesse: `http://localhost:5555`
 
-## 🤝 Contribuindo
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
 ## 📄 Licença
 
 Este projeto está sob a licença MIT.
-
-## 👨‍💻 Autor
-
-**Davi Bernardo**
-
-- GitHub: [@sbernardoDavi](https://github.com/sbernardoDavi)
-- Repositório: [marquei-backend](https://github.com/sbernardoDavi/marquei-backend)
-
-## 🙏 Agradecimentos
-
-- NestJS pela excelente framework
-- Prisma pela ORM moderna
-- Comunidade open source
-
----
-
-⭐ Se este projeto te ajudou, considere dar uma estrela no GitHub!
