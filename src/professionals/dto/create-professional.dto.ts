@@ -1,28 +1,12 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  MinLength,
-  IsArray,
-  IsOptional,
-} from 'class-validator';
+import { IsNotEmpty, IsString, IsArray, IsOptional } from 'class-validator';
 
 export class CreateProfessionalDto {
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
   @IsString()
   @IsNotEmpty()
-  @MinLength(6)
-  password: string;
+  userId: string;
 
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @IsOptional()
   serviceIds?: string[];
 }

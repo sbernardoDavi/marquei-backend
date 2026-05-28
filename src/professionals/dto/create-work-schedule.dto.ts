@@ -1,19 +1,16 @@
-import { IsEnum, IsNotEmpty, IsString, Matches } from 'class-validator';
-
-export enum DayOfWeek {
-  SEGUNDA = 'SEGUNDA',
-  TERCA = 'TERCA',
-  QUARTA = 'QUARTA',
-  QUINTA = 'QUINTA',
-  SEXTA = 'SEXTA',
-  SABADO = 'SABADO',
-  DOMINGO = 'DOMINGO',
-}
+import { IsNotEmpty, IsString, Matches, IsIn } from 'class-validator';
 
 export class CreateWorkScheduleDto {
-  @IsEnum(DayOfWeek)
+  @IsString()
   @IsNotEmpty()
-  dayOfWeek: DayOfWeek;
+  @IsIn(
+    ['SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO', 'DOMINGO'],
+    {
+      message:
+        'dayOfWeek deve ser um dia válido: SEGUNDA, TERCA, QUARTA, QUINTA, SEXTA, SABADO, DOMINGO',
+    },
+  )
+  dayOfWeek: string;
 
   @IsString()
   @IsNotEmpty()

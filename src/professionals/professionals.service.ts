@@ -7,57 +7,62 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { UpdateProfessionalDto } from './dto/update-professional.dto';
 import { CreateWorkScheduleDto } from './dto/create-work-schedule.dto';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ProfessionalsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createProfessionalDto: CreateProfessionalDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: createProfessionalDto.email },
+    const { userId, serviceIds } = createProfessionalDto;
+
+    // Verificar se o usuário existe
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
     });
 
-    if (existingUser) {
-      throw new ConflictException('Email já cadastrado');
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
     }
 
-    const hashedPassword = await bcrypt.hash(
-      createProfessionalDto.password,
-      10,
-    );
-
-    const user = await this.prisma.user.create({
-      data: {
-        email: createProfessionalDto.email,
-        password: hashedPassword,
-        name: createProfessionalDto.name,
-        role: 'PROFISSIONAL',
-        professional: {
-          create: {},
-        },
-      },
-      include: {
-        professional: true,
-      },
-    });
-
-    if (!user.professional) {
-      throw new ConflictException('Erro ao criar profissional');
-    }
-
-    // Associar serviços se fornecidos
-    if (
-      createProfessionalDto.serviceIds &&
-      createProfessionalDto.serviceIds.length > 0
-    ) {
-      await this.addServices(
-        user.professional.id,
-        createProfessionalDto.serviceIds,
+    // Verificar se o usuário tem a role PROFISSIONAL
+    if (user.role !== 'PROFISSIONAL') {
+      throw new ConflictException(
+        'Usuário deve ter a role PROFISSIONAL para ser cadastrado como profissional',
       );
     }
 
-    return this.findOne(user.professional.id);
+    // Verificar se já existe um profissional para este usuário
+    let professional = await this.prisma.professional.findUnique({
+      where: { userId },
+    });
+
+    // Se já existe, retornar o existente (idempotência)
+    if (professional) {
+      // Se forneceu serviceIds, atualizar os serviços
+      if (serviceIds && serviceIds.length > 0) {
+        // Remover serviços antigos
+        await this.prisma.professionalService.deleteMany({
+          where: { professionalId: professional.id },
+        });
+        // Adicionar novos serviços
+        await this.addServices(professional.id, serviceIds);
+      }
+      return this.findOne(professional.id);
+    }
+
+    // Criar profissional
+    professional = await this.prisma.professional.create({
+      data: {
+        userId,
+      },
+    });
+
+    // Associar serviços se fornecidos
+    if (serviceIds && serviceIds.length > 0) {
+      await this.addServices(professional.id, serviceIds);
+    }
+
+    return this.findOne(professional.id);
   }
 
   async findAll() {
@@ -196,7 +201,7 @@ export class ProfessionalsService {
     const existing = await this.prisma.workSchedule.findFirst({
       where: {
         professionalId,
-        dayOfWeek: createWorkScheduleDto.dayOfWeek,
+        dayOfWeek: createWorkScheduleDto.dayOfWeek as any,
       },
     });
 
@@ -209,7 +214,9 @@ export class ProfessionalsService {
     return this.prisma.workSchedule.create({
       data: {
         professionalId,
-        ...createWorkScheduleDto,
+        dayOfWeek: createWorkScheduleDto.dayOfWeek as any,
+        startTime: createWorkScheduleDto.startTime,
+        endTime: createWorkScheduleDto.endTime,
       },
     });
   }
