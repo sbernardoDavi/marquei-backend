@@ -43,20 +43,20 @@ export class AuthService {
       },
     });
 
-    // Se for profissional ou cliente, criar o registro correspondente
-    if (registerDto.role === 'PROFISSIONAL') {
-      await this.prisma.professional.create({
-        data: {
-          userId: user.id,
-        },
-      });
-    } else if (registerDto.role === 'CLIENTE') {
-      await this.prisma.client.create({
-        data: {
-          userId: user.id,
-        },
-      });
-    }
+    // // Se for profissional ou cliente, criar o registro correspondente
+    // if (registerDto.role === 'PROFISSIONAL') {
+    //   await this.prisma.professional.create({
+    //     data: {
+    //       userId: user.id,
+    //     },
+    //   });
+    // } else if (registerDto.role === 'CLIENTE') {
+    //   await this.prisma.client.create({
+    //     data: {
+    //       userId: user.id,
+    //     },
+    //   });
+    // }
 
     const token = this.generateToken(user);
 
