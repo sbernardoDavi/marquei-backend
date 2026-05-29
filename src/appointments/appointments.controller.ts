@@ -63,6 +63,29 @@ export class AppointmentsController {
     });
   }
 
+  @Get('my-appointments')
+  @Roles('CLIENTE')
+  getMyAppointments(
+    @CurrentUser() user: any,
+    @Query('status') status?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    return this.appointmentsService.getClientAppointments(user.id, {
+      status,
+      startDate,
+      endDate,
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 10,
+      sortBy: sortBy || 'startTime',
+      sortOrder: sortOrder || 'desc',
+    });
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.appointmentsService.findOne(id);

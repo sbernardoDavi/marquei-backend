@@ -234,6 +234,7 @@ DELETE /clients/:id  # Deletar (GESTOR)
 POST   /appointments                    # Criar agendamento
 POST   /appointments/available-slots    # Consultar horários disponíveis
 GET    /appointments                    # Listar (com filtros e paginação)
+GET    /appointments/my-appointments    # Listar agendamentos do cliente logado (CLIENTE)
 GET    /appointments/:id                # Buscar por ID
 PATCH  /appointments/:id/status         # Atualizar status (GESTOR/PROFISSIONAL)
 PATCH  /appointments/:id/reschedule     # Remarcar (GESTOR/CLIENTE)
@@ -248,6 +249,19 @@ DELETE /appointments/:id                # Cancelar (GESTOR/CLIENTE)
 - `sortOrder` - Ordem: asc ou desc (padrão: desc)
 - `clientId` - Filtrar por cliente
 - `professionalId` - Filtrar por profissional
+- `status` - Filtrar por status
+- `startDate` - Data início (ISO 8601)
+- `endDate` - Data fim (ISO 8601)
+
+**Endpoint específico para clientes:**
+
+```http
+GET /appointments/my-appointments
+Authorization: Bearer {token}
+```
+
+Retorna apenas os agendamentos do cliente logado. Aceita os mesmos parâmetros de filtro (status, startDate, endDate, page, limit, sortBy, sortOrder).
+
 - `status` - Filtrar por status
 - `startDate` - Data início (ISO 8601)
 - `endDate` - Data fim (ISO 8601)
