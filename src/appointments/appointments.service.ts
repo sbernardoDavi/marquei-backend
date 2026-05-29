@@ -179,7 +179,9 @@ export class AppointmentsService {
       throw new BadRequestException('Profissional não oferece este serviço');
     }
 
-    const targetDate = new Date(date);
+    // Corrigir timezone: parse manual da data para UTC
+    const [year, month, day] = date.split('-').map(Number);
+    const targetDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
     const dayOfWeek = this.getDayOfWeek(targetDate) as any;
 
     // Buscar jornada de trabalho do profissional para o dia
@@ -194,11 +196,9 @@ export class AppointmentsService {
       return { slots: [] };
     }
 
-    // Buscar agendamentos existentes para o dia
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    // Buscar agendamentos existentes para o dia (em UTC)
+    const startOfDay = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    const endOfDay = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
 
     const existingAppointments = await this.prisma.appointment.findMany({
       where: {
@@ -681,11 +681,12 @@ export class AppointmentsService {
     const [startHour, startMinute] = startTime.split(':').map(Number);
     const [endHour, endMinute] = endTime.split(':').map(Number);
 
+    // Criar horários em UTC
     const current = new Date(date);
-    current.setHours(startHour, startMinute, 0, 0);
+    current.setUTCHours(startHour, startMinute, 0, 0);
 
     const workEnd = new Date(date);
-    workEnd.setHours(endHour, endMinute, 0, 0);
+    workEnd.setUTCHours(endHour, endMinute, 0, 0);
 
     const now = new Date();
 
