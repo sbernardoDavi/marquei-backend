@@ -22,6 +22,32 @@ export class AppointmentsService {
     let { clientId, professionalId, serviceId, startTime } =
       createAppointmentDto;
 
+    // Se clientId foi fornecido, verificar se é um userId e converter para clientId
+    if (clientId) {
+      // Tentar buscar como clientId primeiro
+      let client = await this.prisma.client.findUnique({
+        where: { id: clientId },
+      });
+
+      // Se não encontrou, tentar buscar como userId
+      if (!client) {
+        client = await this.prisma.client.findUnique({
+          where: { userId: clientId },
+        });
+
+        if (client) {
+          // Atualizar para usar o clientId correto
+          clientId = client.id;
+        }
+      }
+
+      if (!client) {
+        throw new NotFoundException(
+          `Cliente não encontrado. Verifique se o cliente foi cadastrado corretamente.`,
+        );
+      }
+    }
+
     // Se clientId não foi fornecido, buscar do usuário logado
     if (!clientId && userId) {
       const user = await this.prisma.user.findUnique({
@@ -62,15 +88,6 @@ export class AppointmentsService {
 
     if (!professionalService) {
       throw new BadRequestException('Profissional não oferece este serviço');
-    }
-
-    // Validar que o cliente existe
-    const client = await this.prisma.client.findUnique({
-      where: { id: clientId },
-    });
-
-    if (!client) {
-      throw new NotFoundException('Cliente não encontrado');
     }
 
     const start = new Date(startTime);
@@ -149,6 +166,13 @@ export class AppointmentsService {
       if (error instanceof ConflictException) {
         throw error;
       }
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      console.error('Erro ao criar agendamento:', error);
       throw new BadRequestException('Erro ao criar agendamento');
     }
   }
