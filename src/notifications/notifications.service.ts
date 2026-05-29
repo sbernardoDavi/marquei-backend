@@ -138,7 +138,7 @@ export class NotificationsService {
     const where: any = { userId };
 
     if (unreadOnly) {
-      where.sent = false;
+      where.read = false;
     }
 
     return this.prisma.notification.findMany({
@@ -173,22 +173,27 @@ export class NotificationsService {
         userId,
       },
       data: {
-        sent: true,
-        sentAt: new Date(),
+        read: true,
+        readAt: new Date(),
       },
     });
   }
 
   async markAllAsRead(userId: string) {
-    return this.prisma.notification.updateMany({
+    const result = await this.prisma.notification.updateMany({
       where: {
         userId,
-        sent: false,
+        read: false,
       },
       data: {
-        sent: true,
-        sentAt: new Date(),
+        read: true,
+        readAt: new Date(),
       },
     });
+
+    return {
+      message: 'Todas as notificações foram marcadas como lidas',
+      count: result.count,
+    };
   }
 }
