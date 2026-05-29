@@ -6,45 +6,56 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ClientsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createClientDto: CreateClientDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: createClientDto.email },
+    const { userId, phone } = createClientDto;
+
+    // Verificar se o usuário existe
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
     });
 
-    if (existingUser) {
-      throw new ConflictException('Email já cadastrado');
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
     }
 
-    const hashedPassword = await bcrypt.hash(createClientDto.password, 10);
+    // Verificar se o usuário tem a role CLIENTE
+    if (user.role !== 'CLIENTE') {
+      throw new ConflictException(
+        'Usuário deve ter a role CLIENTE para ser cadastrado como cliente',
+      );
+    }
 
-    const user = await this.prisma.user.create({
+    // Verificar se já existe um cliente para este usuário
+    let client = await this.prisma.client.findUnique({
+      where: { userId },
+    });
+
+    // Se já existe, retornar o existente (idempotência)
+    if (client) {
+      // Se forneceu phone, atualizar
+      if (phone !== undefined) {
+        client = await this.prisma.client.update({
+          where: { id: client.id },
+          data: { phone },
+        });
+      }
+      return this.findOne(client.id);
+    }
+
+    // Criar cliente
+    client = await this.prisma.client.create({
       data: {
-        email: createClientDto.email,
-        password: hashedPassword,
-        name: createClientDto.name,
-        role: 'CLIENTE',
-        client: {
-          create: {
-            phone: createClientDto.phone,
-          },
-        },
-      },
-      include: {
-        client: true,
+        userId,
+        phone,
       },
     });
 
-    if (!user.client) {
-      throw new ConflictException('Erro ao criar cliente');
-    }
-
-    return this.findOne(user.client.id);
+    return this.findOne(client.id);
   }
 
   async findAll() {
