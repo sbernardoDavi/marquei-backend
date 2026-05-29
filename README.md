@@ -174,6 +174,27 @@ Content-Type: application/json
 }
 ```
 
+#### Atualizar Usuário
+
+```http
+PATCH /auth/users/:id
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "name": "Novo Nome",           // Opcional
+  "email": "novoemail@email.com", // Opcional
+  "password": "novasenha123"      // Opcional
+}
+```
+
+**Observações:**
+
+- Requer autenticação (token JWT)
+- Todos os campos são opcionais
+- Se o email for alterado, um novo token será gerado
+- A senha será criptografada automaticamente
+
 ### Serviços
 
 ```http

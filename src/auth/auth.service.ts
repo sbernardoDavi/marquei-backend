@@ -2,11 +2,13 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -105,5 +107,64 @@ export class AuthService {
     };
 
     return this.jwtService.sign(payload);
+  }
+
+  async updateUser(userId: string, updateUserDto: UpdateUserDto) {
+    // Verificar se o usuário existe
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    // Se está alterando o email, verificar se já não está em uso
+    if (updateUserDto.email && updateUserDto.email !== user.email) {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: updateUserDto.email },
+      });
+
+      if (existingUser) {
+        throw new ConflictException('Email já está em uso');
+      }
+    }
+
+    // Preparar dados para atualização
+    const updateData: any = {};
+
+    if (updateUserDto.name) {
+      updateData.name = updateUserDto.name;
+    }
+
+    if (updateUserDto.email) {
+      updateData.email = updateUserDto.email;
+    }
+
+    if (updateUserDto.password) {
+      updateData.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
+
+    // Atualizar usuário
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    // Gerar novo token se o email foi alterado
+    const token = this.generateToken(updatedUser);
+
+    return {
+      user: updatedUser,
+      access_token: token,
+    };
   }
 }
