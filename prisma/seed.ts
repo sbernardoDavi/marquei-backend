@@ -151,10 +151,10 @@ async function main() {
   // Criar Agendamentos (isso vai disparar as notificações!)
   console.log('\n📆 Criando Agendamentos...');
 
-  // Agendamento 1: Amanhã às 10:00
-  const amanha = new Date();
-  amanha.setDate(amanha.getDate() + 1);
-  amanha.setHours(10, 0, 0, 0);
+  // Agendamento 1
+  const data1 = new Date();
+  data1.setDate(data1.getDate() + 10);
+  data1.setHours(10, 0, 0, 0);
 
   const agendamento1 = await prisma.appointment.create({
     data: {
@@ -162,19 +162,19 @@ async function main() {
       professionalId: profissional.id,
       serviceId: corte.id,
       userId: cliente1User.id,
-      startTime: amanha,
-      endTime: new Date(amanha.getTime() + corte.durationMinutes * 60000),
+      startTime: data1,
+      endTime: new Date(data1.getTime() + corte.durationMinutes * 60000),
       status: 'AGENDADO',
     },
   });
   console.log(
-    `✅ Agendamento criado: ${cliente1User.name} - ${corte.name} - ${amanha.toLocaleString('pt-BR')}`,
+    `✅ Agendamento criado: ${cliente1User.name} - ${corte.name} - ${data1.toLocaleString('pt-BR')}`,
   );
 
-  // Agendamento 2: Amanhã às 14:00
-  const amanha14h = new Date();
-  amanha14h.setDate(amanha14h.getDate() + 1);
-  amanha14h.setHours(14, 0, 0, 0);
+  // Agendamento 2
+  const data2 = new Date();
+  data2.setDate(data2.getDate() + 5);
+  data2.setHours(14, 0, 0, 0);
 
   const agendamento2 = await prisma.appointment.create({
     data: {
@@ -182,13 +182,13 @@ async function main() {
       professionalId: profissional.id,
       serviceId: combo.id,
       userId: cliente2User.id,
-      startTime: amanha14h,
-      endTime: new Date(amanha14h.getTime() + combo.durationMinutes * 60000),
+      startTime: data2,
+      endTime: new Date(data2.getTime() + combo.durationMinutes * 60000),
       status: 'AGENDADO',
     },
   });
   console.log(
-    `✅ Agendamento criado: ${cliente2User.name} - ${combo.name} - ${amanha14h.toLocaleString('pt-BR')}`,
+    `✅ Agendamento criado: ${cliente2User.name} - ${combo.name} - ${data2.toLocaleString('pt-BR')}`,
   );
 
   // Criar notificações manualmente para demonstração
@@ -199,7 +199,7 @@ async function main() {
       userId: cliente1User.id,
       appointmentId: agendamento1.id,
       type: 'CONFIRMACAO',
-      message: `Agendamento confirmado para ${amanha.toLocaleString('pt-BR')} com ${profissionalUser.name}`,
+      message: `Agendamento confirmado para ${data1.toLocaleString('pt-BR')} com ${profissionalUser.name}`,
       sent: true,
       sentAt: new Date(),
     },
@@ -210,7 +210,7 @@ async function main() {
       userId: profissionalUser.id,
       appointmentId: agendamento1.id,
       type: 'CONFIRMACAO',
-      message: `Novo agendamento: ${corte.name} com ${cliente1User.name} em ${amanha.toLocaleString('pt-BR')}`,
+      message: `Novo agendamento: ${corte.name} com ${cliente1User.name} em ${data1.toLocaleString('pt-BR')}`,
       sent: true,
       sentAt: new Date(),
     },
@@ -221,7 +221,7 @@ async function main() {
       userId: cliente2User.id,
       appointmentId: agendamento2.id,
       type: 'CONFIRMACAO',
-      message: `Agendamento confirmado para ${amanha14h.toLocaleString('pt-BR')} com ${profissionalUser.name}`,
+      message: `Agendamento confirmado para ${data2.toLocaleString('pt-BR')} com ${profissionalUser.name}`,
       sent: true,
       sentAt: new Date(),
     },
@@ -232,7 +232,7 @@ async function main() {
       userId: profissionalUser.id,
       appointmentId: agendamento2.id,
       type: 'CONFIRMACAO',
-      message: `Novo agendamento: ${combo.name} com ${cliente2User.name} em ${amanha14h.toLocaleString('pt-BR')}`,
+      message: `Novo agendamento: ${combo.name} com ${cliente2User.name} em ${data2.toLocaleString('pt-BR')}`,
       sent: true,
       sentAt: new Date(),
     },
