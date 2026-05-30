@@ -115,7 +115,11 @@ Isso iniciará:
 - PostgreSQL na porta 5432
 - Redis na porta 6379
 
-### 5. Execute as migrações do banco
+### 5. Gerar prisma e as migrações do banco
+
+```bash
+npx prisma generate
+```
 
 ```bash
 npx prisma db push
