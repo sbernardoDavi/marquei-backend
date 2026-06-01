@@ -68,6 +68,12 @@ O Marquei é uma plataforma completa de agendamento que substitui processos manu
 - Paginação e ordenação
 - Filtros por cliente, profissional, serviço, status e período
 
+## 🏗️ Decisões de Arquitetura
+
+O sistema adota **arquitetura em camadas (Layered Architecture)** seguindo o padrão MVC do NestJS, com separação clara entre Controllers , Services e Data Access. Cada módulo funcional é isolado com suas próprias responsabilidades, facilitando manutenção, testes e escalabilidade. A escolha do **NestJS** traz arquitetura modular, injeção de dependências nativa e suporte robusto a TypeScript, enquanto o **Prisma ORM** garante type-safety em todas as operações de banco de dados.
+
+Para garantir a integridade dos agendamentos, implementamos **locks pessimistas** no banco de dados que previnem double-booking mesmo em cenários de alta concorrência. A autenticação baseada em **JWT** com guards de autorização por roles garante que cada perfil (gestor, profissional, cliente) acesse apenas os recursos permitidos.
+
 ## 🛠️ Instalação
 
 ### Pré-requisitos
@@ -376,6 +382,11 @@ npx prisma studio
 ```
 
 Acesse: `http://localhost:5555`
+
+## 🔗 Links
+
+- [Repositório Backend](https://github.com/sbernardoDavi/marquei-frontend)
+- [Documentação da API](https://github.com/sbernardoDavi/marquei-frontend/blob/main/README.md)
 
 ## 📄 Licença
 
