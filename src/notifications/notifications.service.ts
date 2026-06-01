@@ -18,12 +18,19 @@ export class NotificationsService {
   ) {}
 
   async sendAppointmentConfirmation(appointment: any): Promise<void> {
+    const appointmentDate = new Date(appointment.startTime);
+    const dateStr = appointmentDate.toLocaleDateString('pt-BR');
+    const timeStr = appointmentDate.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
     // Notificar o cliente
     await this.createNotification({
       userId: appointment.client.userId,
       appointmentId: appointment.id,
       type: 'CONFIRMACAO',
-      message: `Agendamento confirmado para ${new Date(appointment.startTime).toLocaleString('pt-BR')} com ${appointment.professional.user.name}`,
+      message: `Agendamento confirmado para ${dateStr} às ${timeStr} com ${appointment.professional.user.name}`,
     });
 
     // Notificar o profissional
@@ -31,7 +38,7 @@ export class NotificationsService {
       userId: appointment.professional.userId,
       appointmentId: appointment.id,
       type: 'CONFIRMACAO',
-      message: `Novo agendamento: ${appointment.service.name} com ${appointment.client.user.name} em ${new Date(appointment.startTime).toLocaleString('pt-BR')}`,
+      message: `Novo agendamento: ${appointment.service.name} com ${appointment.client.user.name} em ${dateStr} às ${timeStr}`,
     });
 
     // Agendar lembrete para 24h antes
@@ -39,12 +46,19 @@ export class NotificationsService {
   }
 
   async sendCancellationNotification(appointment: any): Promise<void> {
+    const appointmentDate = new Date(appointment.startTime);
+    const dateStr = appointmentDate.toLocaleDateString('pt-BR');
+    const timeStr = appointmentDate.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
     // Notificar o cliente
     await this.createNotification({
       userId: appointment.client.userId,
       appointmentId: appointment.id,
       type: 'CANCELAMENTO',
-      message: `Agendamento cancelado: ${appointment.service.name} em ${new Date(appointment.startTime).toLocaleString('pt-BR')}`,
+      message: `Agendamento cancelado: ${appointment.service.name} em ${dateStr} às ${timeStr}`,
     });
 
     // Notificar o profissional
@@ -52,7 +66,7 @@ export class NotificationsService {
       userId: appointment.professional.userId,
       appointmentId: appointment.id,
       type: 'CANCELAMENTO',
-      message: `Agendamento cancelado: ${appointment.service.name} com ${appointment.client.user.name} em ${new Date(appointment.startTime).toLocaleString('pt-BR')}`,
+      message: `Agendamento cancelado: ${appointment.service.name} com ${appointment.client.user.name} em ${dateStr} às ${timeStr}`,
     });
   }
 
@@ -60,12 +74,26 @@ export class NotificationsService {
     appointment: any,
     oldTime: Date,
   ): Promise<void> {
+    const oldDate = new Date(oldTime);
+    const oldDateStr = oldDate.toLocaleDateString('pt-BR');
+    const oldTimeStr = oldDate.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const newDate = new Date(appointment.startTime);
+    const newDateStr = newDate.toLocaleDateString('pt-BR');
+    const newTimeStr = newDate.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
     // Notificar o cliente
     await this.createNotification({
       userId: appointment.client.userId,
       appointmentId: appointment.id,
       type: 'REMARCACAO',
-      message: `Agendamento remarcado de ${oldTime.toLocaleString('pt-BR')} para ${new Date(appointment.startTime).toLocaleString('pt-BR')}`,
+      message: `Agendamento remarcado de ${oldDateStr} às ${oldTimeStr} para ${newDateStr} às ${newTimeStr}`,
     });
 
     // Notificar o profissional
@@ -73,7 +101,7 @@ export class NotificationsService {
       userId: appointment.professional.userId,
       appointmentId: appointment.id,
       type: 'REMARCACAO',
-      message: `Agendamento remarcado: ${appointment.service.name} com ${appointment.client.user.name} para ${new Date(appointment.startTime).toLocaleString('pt-BR')}`,
+      message: `Agendamento remarcado: ${appointment.service.name} com ${appointment.client.user.name} para ${newDateStr} às ${newTimeStr}`,
     });
 
     // Agendar novo lembrete
