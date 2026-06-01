@@ -241,14 +241,14 @@ async function main() {
   console.log('✅ 4 notificações criadas');
 
   console.log('\n✨ Seed concluído com sucesso!\n');
-  console.log('📊 Resumo:');
-  console.log('  - 1 Gestor');
-  console.log('  - 1 Profissional');
-  console.log('  - 2 Clientes');
-  console.log('  - 3 Serviços');
-  console.log('  - 5 Dias de jornada');
-  console.log('  - 2 Agendamentos');
-  console.log('  - 4 Notificações');
+  // console.log('📊 Resumo:');
+  // console.log('  - 1 Gestor');
+  // console.log('  - 1 Profissional');
+  // console.log('  - 2 Clientes');
+  // console.log('  - 3 Serviços');
+  // console.log('  - 5 Dias de jornada');
+  // console.log('  - 2 Agendamentos');
+  // console.log('  - 4 Notificações');
   console.log('\n🔑 Credenciais de acesso:');
   console.log('  Email: gestor@marquei.com | Senha: 123456');
   console.log('  Email: carlos@marquei.com | Senha: 123456');
